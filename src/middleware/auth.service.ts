@@ -22,7 +22,6 @@ export class AuthenticationMiddleware implements NestMiddleware {
               throw new HttpException('Invalid Token', 401);
             } else {
               req['user'] = decodedToken;
-              console.log("Hi",req['user'])
               next();
             }
           });
@@ -38,20 +37,6 @@ export class AuthenticationMiddleware implements NestMiddleware {
   }
 }
 
-export class AuthorizationMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
-    console.log(req['user'])
-    const decodedToken = req['user'];
-    const id=req.params.id
-    if (!isValidObjectId(id)) {
-      throw new HttpException('Not a valid user id', HttpStatus.BAD_REQUEST);
-    }
-    if (id.toString() !== decodedToken.id.toString()) {
-      throw new HttpException('Unauthorized access', HttpStatus.FORBIDDEN);
-    }
-    next();
-  }
-}
 
 
 

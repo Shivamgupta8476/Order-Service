@@ -4,19 +4,10 @@ import {
   IsNotEmpty,
   IsString,
   IsNumber,
-  IsUrl,
   IsArray,
-  IsOptional,
   IsEnum,
+  IsObject,
 } from 'class-validator';
-import { types } from 'util';
-
-enum OrderStatus {
-  Pending = 'Pending',
-  Shipped = 'Shipped',
-  Delivered = 'Delivered',
-  Cancelled = 'Cancelled',
-}
 
 enum PaymentMethod {
   COD = 'COD',
@@ -26,110 +17,86 @@ enum PaymentMethod {
   Card = 'Card',
 }
 
-enum OrderType {
-  Normal = 'Normal',
-  Return = 'Return',
-  Exchange = 'Exchange',
+enum AddressType {
+  Home = 'home',
+  Office = 'office',
+  Other = 'other',
 }
 
-enum shippingAddress {
-  Home = 'Address',
-  Office = 'Address',
-  Other = 'Address',
+export class shippingAddressDto {
+  @Prop({ required: true })
+  @IsNotEmpty()
+  state: string;
+
+  @Prop({ required: true })
+  @IsNotEmpty()
+  city: string;
+
+  @Prop({ required: true })
+  @IsNotEmpty()
+  pincode: number;
 }
 
-export class Address {
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    street: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    city: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    state: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    country: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    pincode: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    landmark: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    types: string;
-  
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsNumber()
-    contact: number;
-  }
-  
+export class orderDetails {
+  @Prop({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  ProductId: string;
+
+  @Prop({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  quantity: number;
+
+  @Prop({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  price: number;
+}
+
 @Schema()
 export class OrderModel {
-  @ApiProperty({ description: 'customerId', required: true })
+  @Prop({ required: true })
   @IsNotEmpty()
   @IsString()
   customerId: string;
 
-  @ApiProperty({ description: 'orderDate', required: true })
+  @Prop({ required: true })
+  @IsNotEmpty()
+  @IsArray()
+  orderItems: orderDetails[];
+
+  @Prop({ required: true, default: true })
+  @IsNotEmpty()
+  isactive: boolean;
+
+  @Prop({ required: true, default: Date.now })
   @IsNotEmpty()
   @IsString()
   orderDate: Date;
 
-  @ApiProperty({ description: 'orderItems', required: true })
-  @IsNotEmpty()
-  @IsArray()
-  orderItems: [];
-
-  @ApiProperty({ description: 'totalPrice', required: true })
+  @Prop({ required: true })
   @IsNotEmpty()
   @IsNumber()
   totalPrice: number;
 
-  @ApiProperty({ description: 'paymentMethod', required: true })
+  @Prop({ required: true })
   @IsNotEmpty()
-  @IsString()
+  @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
- 
-  @ApiProperty({ enum: shippingAddress, enumName: 'ShippingAddress' })
-  shippingAddress: shippingAddress;
 
-  @ApiProperty({ enum: Address, enumName: 'Address' })
-  @IsEnum(Address)
-  address:Address
+  @Prop({ required: true })
+  @IsEnum(AddressType)
+  addressType: AddressType;
 
-@ApiProperty({ enum: OrderStatus, enumName: 'OrderStatus' })
-@IsEnum(OrderStatus)
-orderStatus: OrderStatus;
+  @Prop({ required: true })
+  @IsObject()
+  address: shippingAddressDto;
 
-  @ApiProperty({
-    description: 'createdAt',
-    required: false,
-    default: new Date(),
-  })
+  @Prop({ required: true, default: Date.now })
   createdAt: Date;
 
-  @ApiProperty({
-    description: 'updatedAt',
-    required: false,
-    default: new Date(),
-  })
+  @Prop({ required: true, default: Date.now })
   updatedAt: Date;
 }
 

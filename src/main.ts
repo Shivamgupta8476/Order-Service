@@ -10,19 +10,17 @@ const port = 5000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.connectMicroservice<MicroserviceOptions>({
-	// 	transport: Transport.RMQ,
-	// 	options: {
-	// 		urls: [
-	// 			process.env.RABBIT_URI,
-	// 		],
-	// 		queue: 'Order_queue',
-	// 		queueOptions: {
-	// 			durable: false,
-	// 		},
-	// 	},
-	// });
-	await app.startAllMicroservices();
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBIT_URI],
+      queue: 'Order_queue',
+      queueOptions: {
+        durable: false,
+      },
+    },
+  });
+  await app.startAllMicroservices();
   const config = new DocumentBuilder()
     .setTitle('Order_Service')
     .setDescription('Order Service Backend APIS')

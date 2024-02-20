@@ -1,14 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsArray, IsString, IsNumber, IsEnum, IsObject } from 'class-validator';
+import { bool } from 'aws-sdk/clients/signer';
+import {
+  IsNotEmpty,
+  IsArray,
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsObject,
+} from 'class-validator';
 
-// Enum definitions
-enum OrderStatus {
-  Pending = 'Pending',
-  Shipped = 'Shipped',
-  Delivered = 'Delivered',
-  Cancelled = 'Cancelled',
-}
-
+// Define enums
 enum PaymentMethod {
   COD = 'COD',
   Online = 'Online',
@@ -17,96 +18,68 @@ enum PaymentMethod {
   Card = 'Card',
 }
 
-enum ShippingAddress {
+enum AddressType {
   Home = 'home',
   Office = 'office',
   Other = 'other',
 }
 
-// Address class definition
-export class Address {
-  @ApiProperty()
+// Address DTO
+export class ShippingAddressDto {
+  @ApiProperty({ description: 'State' })
   @IsNotEmpty()
-  @IsString()
-  street: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  city: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
   state: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'City' })
   @IsNotEmpty()
-  @IsString()
-  country: string;
+  city: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Pincode' })
   @IsNotEmpty()
-  @IsString()
-  pincode: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  landmark: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  types: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  contact: number;
+  pincode: number;
 }
 
-// OrderDto class definition
-export class OrderDto {  
-  @ApiProperty({description: 'customerId'})
+// OrderDetails DTO
+export class OrderDetails {
+  @ApiProperty({ description: 'ProductId' })
   @IsNotEmpty()
   @IsString()
-  customerId: string;
+  productId: string;
 
-  @ApiProperty({description: 'orderDate',default: new Date()})
-  @IsNotEmpty()
-  @IsString()
-  orderDate: string; // Change to string type as Date might cause issues with serialization
-
-  @ApiProperty({description: 'orderItems'})
-  @IsNotEmpty()
-  @IsArray() 
-  orderItems: any[]; // You might want to define a proper type for order items
-
-  @ApiProperty({description: 'totalPrice'})
+  @ApiProperty({ description: 'Quantity' })
   @IsNotEmpty()
   @IsNumber()
-  totalPrice: number;
+  quantity: number;
+}
 
-  @ApiProperty({enum: ShippingAddress})
-  @IsEnum(ShippingAddress)
-  shippingAddress: ShippingAddress;
+// Order DTO
+export class OrderDto {
+  @ApiProperty({ description: 'Order items',type: [OrderDetails]})
+  @IsNotEmpty()
+  @IsArray()
+  orderItems: OrderDetails[];
 
-  @ApiProperty({type: Address})
+  @ApiProperty({ enum: AddressType, description: 'Address type' })
+  @IsEnum(AddressType)
+  addressType: AddressType;
+
+  @ApiProperty({ type: ShippingAddressDto, description: 'Shipping address' })
   @IsObject()
-  address: Address;
+  address: ShippingAddressDto;
 
-  @ApiProperty({enum: PaymentMethod})
+  @ApiProperty({ enum: PaymentMethod, description: 'Payment method' })
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 
-  @ApiProperty({enum: OrderStatus})
-  @IsEnum(OrderStatus)
-  orderStatus: OrderStatus;
-
-  @ApiProperty({description: 'createdAt',default: new Date()})
+  @ApiProperty({ description: 'Creation date', default: new Date() })
   createdAt: Date;
 
-  @ApiProperty({description: 'updatedAt',default: new Date()})
+  @ApiProperty({ description: 'Update date', default: new Date() })
   updatedAt: Date;
+}
+
+export class OrderUpdateDto {
+  @ApiProperty({ description: 'Order status', default: false })
+  @IsObject()
+  isCancelled: boolean;
 }
