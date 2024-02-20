@@ -14,34 +14,39 @@ require('dotenv').config();
 export class OrderService {
     constructor(
         private readonly logger: Logger,
-        @InjectModel(OrderModel.name) private readonly orderServiceModel: Model<OrderModel>,
+        @InjectModel("OrderModel") private readonly orderServiceModel: Model<OrderModel>,
     ) {
     }
 
-    async createProduct(data: OrderDto, file: Express.Multer.File,req:any): Promise<any> {
-        this.logger.log("Entered into createProduct", OrderService.name);
-        try {
-            if (!file || file.size <= 0) {
-                return new HttpException("Invalid file", HttpStatus.BAD_REQUEST);
+    async createOrder(data: OrderDto): Promise<any> {
+        // this.logger.log("Entered into createProduct", OrderService.name);
+        try { 
+            if(!data.customerId){
+                throw new HttpException('customerId is required', 404);
             }
-            const newProduct = await this.orderServiceModel.create({...data,
-                createdAt: data.createdAt || new Date(),
-                updatedAt: data.updatedAt || new Date(),
-                imageUrl: location ,
-                adminId:req['user']['id']
 
-            });
-            return {
-                message: 'Product created successfully',
-                success: true,
-                data: newProduct
-            };
-        } catch (error) {
-            return error.message;
+            let orderdata = {}
+            orderdata['customerId'] = data.customerId
+            orderdata['totalPrice'] = data.totalPrice
+            orderdata['paymentMethod'] = data.paymentMethod
+            orderdata['shippingAddress'] = data.shippingAddress
+            orderdata['orderItems'] = data.orderItems
+            orderdata['orderStatus'] = data.orderStatus
+            orderdata['address'] = data.address
+            orderdata['orderDate'] = data.orderDate
+            orderdata['createdAt'] = data.createdAt
+            orderdata['updatedAt'] = data.updatedAt
+
+
+            const newOrder = await this.orderServiceModel.create({orderdata}); 
+            return newOrder
+        } catch (e) {
+            throw new HttpException(e.message, 404);
         }
     }
-
-    async getProducts(id: string) {
+    
+    
+    async getOrder(id: string) {
         try{
         return await this.orderServiceModel.find({_id:id});
         }catch(e){
@@ -50,15 +55,15 @@ export class OrderService {
 
     }
 
-    async getAllProducts() {
+    async getAllOrder(userId:string) {
         try{
-        return await this.orderServiceModel.find({});
+        return await this.orderServiceModel.find({customerId:userId});
         }catch(e){
             throw new HttpException(e.message, 404);
         }
     }
 
-    async deleteProduct(id: string,userId:string) { 
+    async deleteOrder(id: string,userId:string) { 
         try{
         if(userId !== id){
             throw new HttpException('Unauthorized access', HttpStatus.FORBIDDEN);
@@ -69,14 +74,13 @@ export class OrderService {
         }
     }
     
-    async updateProduct(id: string, data: OrderDto) {
+    async updateOrder(id: string, data: OrderDto) {
         try { 
             const order = await this.orderServiceModel.findById(id);
             
             if (!order) {
                 throw new Error("Product not found");
-            } 
-            order.stockQuantity += data.stockQuantity;
+            }  
             order.updatedAt = new Date();
      
             await order.save();
